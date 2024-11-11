@@ -11,29 +11,26 @@ return new class extends Migration
      */
     public function up()
     {
-        // Schema::create('student_logs', function (Blueprint $table) {
-        //     $table->id();
-        //     $table->unsignedBigInteger('student_id');
-        //     $table->unsignedBigInteger('user_id'); // To track the user who triggered the event
-        //     $table->enum('type', ['INSERT', 'UPDATE', 'DELETE']);
+        Schema::create('student_logs', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id'); // To track the user who triggered the event
+            $table->enum('type', ['INSERT', 'UPDATE', 'DELETE']);
 
-        //     // Columns to store each attribute's value separately
-        //     $table->string('student_number', 20)->nullable();
-        //     $table->string('first_name', 50)->nullable();
-        //     $table->string('last_name', 50)->nullable();
-        //     $table->string('email', 100)->nullable();
-        //     $table->date('date_of_birth')->nullable();
-        //     $table->unsignedBigInteger('year_level')->nullable();
-        //     $table->enum('enrollment_status', ['Active', 'Inactive', 'Graduated'])->nullable();
-        //     $table->date('date_enrolled')->nullable();
-        //     $table->boolean('financial_hold')->default(false);
+            // Columns to store each attribute's value separately
+            $table->string('student_number', 20)->nullable();
+            $table->string('first_name', 50)->nullable();
+            $table->string('last_name', 50)->nullable();
+            $table->string('email', 100)->nullable();
+            $table->date('date_of_birth')->nullable();
+            $table->unsignedBigInteger('year_level')->nullable();
+            $table->enum('enrollment_status', ['Active', 'Inactive', 'Graduated'])->nullable();
+            $table->date('date_enrolled')->nullable();
+            $table->boolean('financial_hold')->default(false);
 
-        //     $table->timestamps();
+            $table->timestamps();
 
-        //     // Foreign key constraints
-        //     $table->foreign('student_id')->references('student_id')->on('students')->onDelete('cascade');
-        //     $table->foreign('user_id')->references('user_id')->on('users')->onDelete('cascade');
-        // });
+            $table->foreign('user_id')->references('user_id')->on('users')->onDelete('cascade');
+        });
     }
 
     public function down()

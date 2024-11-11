@@ -18,12 +18,12 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        // User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+        User::factory()->create([
+            'name' => fake()->name('male'),
+            'email' => 'test@example.com',
+        ]);
 
-        // Student::factory(50)->create();
+        Student::factory(50)->create();
         // Room::factory(10)->create();
         // Department::factory()->create([
         //     'department_name' => 'College Of Engineering And Information Technology'
