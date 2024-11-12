@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\ClassSchedule;
 use App\Models\User;
 use App\Models\Student;
 use App\Models\Room;
@@ -26,7 +27,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         Student::factory(50)->create();
-        Room::factory(10)->create();
+        // Room::factory(10)->create();
         Department::factory()->create([
             'department_name' => 'College Of Engineering And Information Technology'
         ]);
@@ -40,7 +41,8 @@ class DatabaseSeeder extends Seeder
             'department_name' => 'College Of Industrial Technology And Teacher Education'
         ]);
 
-        Instructor::factory(10)->create();
+        // Instructor::factory(10)->create();
         Subject::factory(10)->create();
+        ClassSchedule::factory(10)->create();
     }
 }

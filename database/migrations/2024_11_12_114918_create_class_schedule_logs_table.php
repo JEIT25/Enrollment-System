@@ -11,21 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('subject_logs', function (Blueprint $table) {
+        Schema::create('class_schedule_logs', function (Blueprint $table) {
             $table->id('log_id');
             $table->string('performed_by');
             $table->enum('action',['INSERT','UPDATE','DELETE']);
-            $table->string('subject_code', 20);
-            $table->string('subject_name', 100);
-            $table->unsignedBigInteger('credits');
-            $table->unsignedBigInteger('department_id');
-            $table->unsignedBigInteger('pre_requisite_subject_id')->nullable();
-            $table->unsignedBigInteger('co_requisite_subject_id')->nullable();
-            $table->unsignedBigInteger('weekly_hours');
+            $table->unsignedBigInteger('subject_id');
+            $table->unsignedBigInteger('instructor_id');
+            $table->unsignedBigInteger('room_id');
+            $table->time('start_time');
+            $table->time('end_time');
+            $table->enum('day_of_week', ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']);
+            $table->unsignedBigInteger('max_students');
             $table->enum('semester', ['First', 'Second', 'Summer']);
             $table->timestamps();
         });
-
     }
 
     /**
@@ -33,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('subject_logs');
+        Schema::dropIfExists('class_schedule_logs');
     }
 };

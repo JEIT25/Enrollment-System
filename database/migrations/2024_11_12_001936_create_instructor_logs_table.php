@@ -21,10 +21,6 @@ return new class extends Migration
             $table->unsignedBigInteger('department_id'); // Department ID for reference
             $table->json('availability_hours'); // Store the availability hours JSON structure
             $table->timestamps(); // Log entry timestamps
-
-            $table->foreign('department_id')
-                ->references('department_id')
-                ->on('departments');
         });
     }
 
