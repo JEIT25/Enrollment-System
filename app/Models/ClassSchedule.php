@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ClassSchedule extends Model
 {
+    public $timestamps = false;//no timestamps for this model, not in migration, needed to avoid error in db seeding
     protected $fillable = [
         'schedule_id',
         'subject_id',

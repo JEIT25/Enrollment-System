@@ -4,7 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class Department extends Model
 {
@@ -14,4 +15,40 @@ class Department extends Model
         'department_id',
         'department_name'
     ];
+
+    protected static function booted()
+    {
+        // Log action when a department is created
+        static::created(function ($department) {
+            DB::table('department_logs')->insert([
+                'user_id' => Auth::id() ?? 1, // Authenticated user ID, or defaults to 1 if no user is logged in
+                'action' => 'INSERT', // action of action
+                'department_name' => $department->department_name,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
+
+        // Log action when a department is updated
+        static::updated(function ($department) {
+            DB::table('department_logs')->insert([
+                'user_id' => Auth::id() ?? 1, // Authenticated user ID, or defaults to 1 if no user is logged in
+                'action' => 'UPDATE', // action of action
+                'department_name' => $department->department_name,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
+
+        // Log action when a department is deleted
+        static::deleted(function ($department) {
+            DB::table('department_logs')->insert([
+                'user_id' => Auth::id() ?? 1, // Authenticated user ID, or defaults to 1 if no user is logged in
+                'action' => 'DELETE', // type of action
+                'department_name' => $department->department_name,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
+    }
 }

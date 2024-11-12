@@ -13,7 +13,6 @@ class Student extends Model
     protected $fillable = [
         'student_id',
         'user_id',
-        'type',
         'student_number',
         'first_name',
         'last_name',
@@ -32,7 +31,7 @@ class Student extends Model
         static::created(function ($student) {
             DB::table('student_logs')->insert([
                 'user_id' => Auth::id() ?? 1, // Authenticated user or defaults to 1
-                'type' => 'INSERT',
+                'action' => 'INSERT',
                 'student_number' => $student->student_number,
                 'first_name' => $student->first_name,
                 'last_name' => $student->last_name,
@@ -50,7 +49,7 @@ class Student extends Model
         static::updated(function ($student) {
             DB::table('student_logs')->insert([
                 'user_id' => Auth::id() ?? 1, // Authenticated user or defaults to 1
-                'type' => 'UPDATE',
+                'action' => 'UPDATE',
                 'student_number' => $student->student_number,
                 'first_name' => $student->first_name,
                 'last_name' => $student->last_name,
@@ -68,7 +67,7 @@ class Student extends Model
         static::deleted(function ($student) {
             DB::table('student_logs')->insert([
                 'user_id' => Auth::id() ?? 1, // Authenticated user or defaults to 1
-                'type' => 'DELETE',
+                'action' => 'DELETE',
                 'student_number' => $student->student_number,
                 'first_name' => $student->first_name,
                 'last_name' => $student->last_name,

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('student_logs', function (Blueprint $table) {
             $table->id('log_id');
             $table->unsignedBigInteger('user_id'); // To track the user who triggered the event
-            $table->enum('type', ['INSERT', 'UPDATE', 'DELETE']);
+            $table->enum('action', ['INSERT', 'UPDATE', 'DELETE']);
 
             // Columns to store each attribute's value separately
             $table->string('student_number', 20)->nullable();
