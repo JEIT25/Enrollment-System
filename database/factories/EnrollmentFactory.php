@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\ClassSchedule;
+use App\Models\Student;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +19,11 @@ class EnrollmentFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'student_id' => Student::factory(),
+            'schedule_id' => ClassSchedule::factory(),
+            'date_enrolled' => fake()->dateTimeBetween('-3 years', 'now')->format('Y-m-d'),
+            'grade' => 0,
+            'status' => 'Enrolled',
         ];
     }
 }
