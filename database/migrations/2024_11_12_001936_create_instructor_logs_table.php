@@ -1,0 +1,42 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('instructor_logs', function (Blueprint $table) {
+            $table->id('log_id');
+            $table->unsignedBigInteger('user_id'); // ID of the user performing the action
+            $table->string('action'); // Type of action (INSERT, UPDATE, DELETE)
+            $table->string('first_name', 50); // First name for reference
+            $table->string('last_name', 50); // Last name for reference
+            $table->string('email', 100); // Email for reference
+            $table->unsignedBigInteger('department_id'); // Department ID for reference
+            $table->json('availability_hours'); // Store the availability hours JSON structure
+            $table->timestamps(); // Log entry timestamps
+
+            $table->foreign('department_id')
+                ->references('department_id')
+                ->on('departments');
+
+            $table->foreign('user_id')
+                ->references('user_id')
+                ->on('users');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('instructor_logs');
+    }
+};

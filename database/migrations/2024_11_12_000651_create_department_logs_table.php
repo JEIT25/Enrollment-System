@@ -15,8 +15,13 @@ return new class extends Migration
             $table->id('log_id');
             $table->enum('action', ['INSERT', 'UPDATE', 'DELETE']); // Type of action (INSERT, UPDATE, DELETE)
             $table->unsignedBigInteger('department_id'); // ID of the affected department
+            $table->unsignedBigInteger('user_id'); // ID of the affected department
             $table->string('department_name', 500); // Department name for reference
             $table->timestamps(); // Log entry timestamps
+
+            $table->foreign('user_id')
+                ->references('user_id')
+                ->on('users');
         });
     }
 
