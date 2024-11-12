@@ -21,7 +21,7 @@ class Department extends Model
         // Log action when a department is created
         static::created(function ($department) {
             DB::table('department_logs')->insert([
-                'user_id' => Auth::id() ?? 1, // Authenticated user ID, or defaults to 1 if no user is logged in
+                'performed_by' => Auth::user()->name ?? "Admin", // Authenticated user or defaults to Admin
                 'action' => 'INSERT', // action of action
                 'department_name' => $department->department_name,
                 'created_at' => now(),
@@ -32,7 +32,7 @@ class Department extends Model
         // Log action when a department is updated
         static::updated(function ($department) {
             DB::table('department_logs')->insert([
-                'user_id' => Auth::id() ?? 1, // Authenticated user ID, or defaults to 1 if no user is logged in
+                'performed_by' => Auth::user()->name ?? "Admin", // Authenticated user or defaults to Admin
                 'action' => 'UPDATE', // action of action
                 'department_name' => $department->department_name,
                 'created_at' => now(),
@@ -43,7 +43,7 @@ class Department extends Model
         // Log action when a department is deleted
         static::deleted(function ($department) {
             DB::table('department_logs')->insert([
-                'user_id' => Auth::id() ?? 1, // Authenticated user ID, or defaults to 1 if no user is logged in
+                'performed_by' => Auth::user()->name ?? "Admin", // Authenticated user or defaults to Admin
                 'action' => 'DELETE', // type of action
                 'department_name' => $department->department_name,
                 'created_at' => now(),

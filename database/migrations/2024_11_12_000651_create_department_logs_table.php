@@ -13,15 +13,11 @@ return new class extends Migration
     {
         Schema::create('department_logs', function (Blueprint $table) {
             $table->id('log_id');
+            $table->string('performed_by'); // To track the user who triggered the event
             $table->enum('action', ['INSERT', 'UPDATE', 'DELETE']); // Type of action (INSERT, UPDATE, DELETE)
-            $table->unsignedBigInteger('department_id'); // ID of the affected department
-            $table->unsignedBigInteger('user_id'); // ID of the affected department
             $table->string('department_name', 500); // Department name for reference
             $table->timestamps(); // Log entry timestamps
 
-            $table->foreign('user_id')
-                ->references('user_id')
-                ->on('users');
         });
     }
 

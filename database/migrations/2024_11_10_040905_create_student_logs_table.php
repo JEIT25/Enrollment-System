@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('student_logs', function (Blueprint $table) {
             $table->id('log_id');
-            $table->unsignedBigInteger('user_id'); // To track the user who triggered the event
+            $table->string('performed_by'); // To track the user who triggered the event
             $table->enum('action', ['INSERT', 'UPDATE', 'DELETE']);
 
             // Columns to store each attribute's value separately
@@ -28,8 +28,6 @@ return new class extends Migration
             $table->boolean('financial_hold')->default(false);
 
             $table->timestamps();
-
-            $table->foreign('user_id')->references('user_id')->on('users')->onDelete('cascade');
         });
     }
 

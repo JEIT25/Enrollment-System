@@ -12,7 +12,7 @@ class Student extends Model
     public $timestamps = false;//no timestamps for this model, not in migration, needed to avoid error in db seeding
     protected $fillable = [
         'student_id',
-        'user_id',
+        'performed_by',
         'student_number',
         'first_name',
         'last_name',
@@ -30,7 +30,7 @@ class Student extends Model
         // Log action when a student is created
         static::created(function ($student) {
             DB::table('student_logs')->insert([
-                'user_id' => Auth::id() ?? 1, // Authenticated user or defaults to 1
+                'performed_by' => Auth::user()->name ?? "Admin", // Authenticated user or defaults to Admin
                 'action' => 'INSERT',
                 'student_number' => $student->student_number,
                 'first_name' => $student->first_name,
@@ -48,7 +48,7 @@ class Student extends Model
         // Log action when a student is updated
         static::updated(function ($student) {
             DB::table('student_logs')->insert([
-                'user_id' => Auth::id() ?? 1, // Authenticated user or defaults to 1
+                'performed_by' => Auth::user()->name ?? 1, // Authenticated user or defaults to 1
                 'action' => 'UPDATE',
                 'student_number' => $student->student_number,
                 'first_name' => $student->first_name,
@@ -66,7 +66,7 @@ class Student extends Model
         // Log action when a student is deleted
         static::deleted(function ($student) {
             DB::table('student_logs')->insert([
-                'user_id' => Auth::id() ?? 1, // Authenticated user or defaults to 1
+                'performed_by' => Auth::user()->name ?? 1, // Authenticated user or defaults to 1
                 'action' => 'DELETE',
                 'student_number' => $student->student_number,
                 'first_name' => $student->first_name,

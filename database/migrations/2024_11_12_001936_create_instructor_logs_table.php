@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('instructor_logs', function (Blueprint $table) {
             $table->id('log_id');
-            $table->unsignedBigInteger('user_id'); // ID of the user performing the action
+            $table->string('performed_by'); // To track the user who triggered the event
             $table->string('action'); // Type of action (INSERT, UPDATE, DELETE)
             $table->string('first_name', 50); // First name for reference
             $table->string('last_name', 50); // Last name for reference
@@ -25,10 +25,6 @@ return new class extends Migration
             $table->foreign('department_id')
                 ->references('department_id')
                 ->on('departments');
-
-            $table->foreign('user_id')
-                ->references('user_id')
-                ->on('users');
         });
     }
 

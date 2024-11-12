@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('schedule_id')->unique();
             $table->date('date_enrolled');
             $table->decimal('grade', 4, 2);
-            $table->enum("status", ['Enrolled', 'Completed', 'Dropped', 'Waitlisted'])->default('Enrolled');
+            $table->enum("status", allowed: ['Enrolled', 'Completed', 'Dropped', 'Waitlisted'])->default('Enrolled');
 
             $table->foreign('student_id')
                 ->references('student_id')

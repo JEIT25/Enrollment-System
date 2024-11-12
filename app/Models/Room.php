@@ -28,7 +28,7 @@ class Room extends Model
                 'room_capacity' => $room->room_capacity,
                 'room_type' => $room->room_type,
                 'action' => 'INSERT',
-                'user_id' => Auth::id() ?? 1, // Use current user ID or default to 1
+                'performed_by' => Auth::user()->name ?? "Admin", // Authenticated user or defaults to Admin
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -42,7 +42,7 @@ class Room extends Model
                 'room_capacity' => $room->room_capacity,
                 'room_type' => $room->room_type,
                 'action' => 'UPDATE',
-                'user_id' => Auth::id() ?? 1, // Use current user ID or default to 1
+                'performed_by' => Auth::user()->name ?? "Admin", // Authenticated user or defaults to Admin
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -57,7 +57,7 @@ class Room extends Model
                 'room_capacity' => $room->room_capacity,
                 'room_type' => $room->room_type,
                 'action' => 'DELETE',
-                'user_id' => Auth::id() ?? 1, // Use current user ID or default to 1
+                'performed_by' => Auth::user()->name ?? "Admin", // Authenticated user or defaults to Admin
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

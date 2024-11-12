@@ -13,17 +13,13 @@ return new class extends Migration
     {
         Schema::create('room_logs', function (Blueprint $table) {
             $table->id('log_id');
+            $table->string('performed_by'); // To track the user who triggered the event
             $table->string('room_number', 20);
             $table->string('building_name', 100);
             $table->unsignedBigInteger('room_capacity');
-            $table->unsignedBigInteger('user_id');
             $table->enum('room_type', ['Lecture', 'Laboratory', 'Studio', 'Seminar']);
             $table->enum('action', ['INSERT', 'UPDATE','DELETE']); // Type of action
             $table->timestamps();
-
-            $table->foreign('user_id')
-                ->references('user_id')
-                ->on('users');
         });
     }
 
