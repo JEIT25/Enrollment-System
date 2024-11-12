@@ -12,7 +12,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('student_logs', function (Blueprint $table) {
-            $table->id();
+            $table->id('log_id');
             $table->unsignedBigInteger('user_id'); // To track the user who triggered the event
             $table->enum('type', ['INSERT', 'UPDATE', 'DELETE']);
 

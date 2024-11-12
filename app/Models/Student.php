@@ -2,6 +2,7 @@
 
 namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB; // Import the DB facade
 use Illuminate\Database\Eloquent\Model;
 
@@ -25,13 +26,13 @@ class Student extends Model
     ];
 
 
-    protected static function booted()//ONLY UNCOMMENT(USE) IF YOU USE SEEDERS, FOR INSERTING LOGS WHEN SEEDING DATABASE WITH DUMMY DATA
+    protected static function booted()
     {
+        // Log action when a student is created
         static::created(function ($student) {
-            // Insert a new log entry in the `student_logs` table after a student is created
             DB::table('student_logs')->insert([
-                'user_id' => 1, // change accordingly to existing user_id in the database
-                'type' => 'INSERT', // Type of action (e.g., INSERT)
+                'user_id' => Auth::id() ?? 1, // Authenticated user or defaults to 1
+                'type' => 'INSERT',
                 'student_number' => $student->student_number,
                 'first_name' => $student->first_name,
                 'last_name' => $student->last_name,
@@ -40,8 +41,44 @@ class Student extends Model
                 'year_level' => $student->year_level,
                 'enrollment_status' => $student->enrollment_status,
                 'date_enrolled' => $student->date_enrolled,
-                'created_at' => now(), // Timestamp of log entry creation
-                'updated_at' => now(), // Timestamp of last update to log
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
+
+        // Log action when a student is updated
+        static::updated(function ($student) {
+            DB::table('student_logs')->insert([
+                'user_id' => Auth::id() ?? 1, // Authenticated user or defaults to 1
+                'type' => 'UPDATE',
+                'student_number' => $student->student_number,
+                'first_name' => $student->first_name,
+                'last_name' => $student->last_name,
+                'email' => $student->email,
+                'date_of_birth' => $student->date_of_birth,
+                'year_level' => $student->year_level,
+                'enrollment_status' => $student->enrollment_status,
+                'date_enrolled' => $student->date_enrolled,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
+
+        // Log action when a student is deleted
+        static::deleted(function ($student) {
+            DB::table('student_logs')->insert([
+                'user_id' => Auth::id() ?? 1, // Authenticated user or defaults to 1
+                'type' => 'DELETE',
+                'student_number' => $student->student_number,
+                'first_name' => $student->first_name,
+                'last_name' => $student->last_name,
+                'email' => $student->email,
+                'date_of_birth' => $student->date_of_birth,
+                'year_level' => $student->year_level,
+                'enrollment_status' => $student->enrollment_status,
+                'date_enrolled' => $student->date_enrolled,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         });
     }

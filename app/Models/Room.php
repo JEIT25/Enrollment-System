@@ -4,7 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 class Room extends Model
 {
     use HasFactory;
@@ -16,4 +17,50 @@ class Room extends Model
         'room_capacity',
         'room_type'
     ];
+
+    protected static function booted() //booted method in an Eloquent model is a special method used to define model event listeners
+    {
+        // Log insert actions
+        static::created(function ($room) {
+            DB::table('room_logs')->insert([
+                'room_number' => $room->room_number,
+                'building_name' => $room->building_name,
+                'room_capacity' => $room->room_capacity,
+                'room_type' => $room->room_type,
+                'action' => 'INSERT',
+                'user_id' => Auth::id() ?? 1, // Use current user ID or default to 1
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
+
+        // Log update actions
+        static::updated(function ($room) {
+            DB::table('room_logs')->insert([
+                'room_number' => $room->room_number,
+                'building_name' => $room->building_name,
+                'room_capacity' => $room->room_capacity,
+                'room_type' => $room->room_type,
+                'action' => 'UPDATE',
+                'user_id' => Auth::id() ?? 1, // Use current user ID or default to 1
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
+
+
+        // Log DELETE actions
+        static::updated(function ($room) {
+            DB::table('room_logs')->insert([
+                'room_number' => $room->room_number,
+                'building_name' => $room->building_name,
+                'room_capacity' => $room->room_capacity,
+                'room_type' => $room->room_type,
+                'action' => 'DELETE',
+                'user_id' => Auth::id() ?? 1, // Use current user ID or default to 1
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
+    }
 }
