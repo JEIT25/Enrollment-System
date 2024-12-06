@@ -8,5 +8,7 @@ Route::get('/', function () {
 })->name('landing-page');
 
 
-Route::resource('class_schedule', ClassScheduleController::class)
-->only('create');
+Route::get('/class-schedules/get-available-schedules', [ClassScheduleController::class, 'getAllAvailableSchedules']);
+
+Route::resource('class-schedules', ClassScheduleController::class)
+->only('create','store');

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="{{asset('images/logos/csucc-logo.png')}}" type="image/png">
+    <link rel="icon" href="{{ asset('images/logos/csucc-logo.png') }}" type="image/png">
     <title>@yield('page-title')</title>
     <link rel="stylesheet" href="{{ asset('styles/layouts/app.css') }}">
     @yield('styles')
@@ -26,6 +26,7 @@
 
     <!-- Main Content -->
     <main>
+
         @yield('main-content')
     </main>
 
@@ -69,7 +70,8 @@
         <div class="copyright-text-container">
             <p class="text">Copyright &copy; 2024</p>
             <span class="text withImg">
-                <img src="{{ asset('images/logos/csucc-logo.png') }}" alt="University Logo" class="footer-logo-img-copyright">
+                <img src="{{ asset('images/logos/csucc-logo.png') }}" alt="University Logo"
+                    class="footer-logo-img-copyright">
                 <a href="/">Caraga State University Cabadbaran City.</a>
                 <p>All Rights Reserved.</p>
             </span>
@@ -77,6 +79,51 @@
         </div>
     </footer>
 
+    <!-- Modals -->
+    @if (session('success'))
+        <div id="successModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h2>Success</h2>
+                <p>{{ session('success') }}</p>
+                <button onclick="closeModal('successModal')">Close</button>
+            </div>
+        </div>
+    @endif
+
+    @if (session('failed'))
+        <div id="failedModal" class="modal">
+            <div class="modal-content">
+                <h2>Error</h2>
+                @if (is_array(session('failed')))
+                    <ul>
+                        @foreach (session('failed') as $field => $errors)
+                            @foreach ($errors as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        @endforeach
+                    </ul>
+                @endif
+                <button onclick="closeModal('failedModal')">Close</button>
+            </div>
+        </div>
+    @endif
+
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const successModal = document.getElementById('successModal');
+            const failedModal = document.getElementById('failedModal');
+
+            if (successModal) successModal.style.display = 'flex'; // Show success modal
+            if (failedModal) failedModal.style.display = 'flex'; // Show failed modal
+        });
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) modal.style.display = 'none';
+        }
+    </script>
     @yield('scripts')
 </body>
 
