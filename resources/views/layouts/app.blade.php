@@ -109,7 +109,6 @@
     @endif
 
 
-
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const successModal = document.getElementById('successModal');

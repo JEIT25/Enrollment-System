@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\ClassSchedule;
+use App\Models\Instructor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ClassScheduleController extends Controller
 {
-
     public function getAllAvailableSchedules(Request $request)
     {
         $roomId = $request->query('room_id');
@@ -19,6 +19,14 @@ class ClassScheduleController extends Controller
             return response()->json(['error' => 'Invalid inputs'], 400);
         }
 
+        // Fetch instructor's availability hours
+        $instructor = Instructor::where('instructor_id', $instructorId)->first();
+        if (!$instructor || !$instructor->availability_hours) {
+            return response()->json(['error' => 'Instructor availability not found'], 404);
+        }
+
+        $availabilityHours = json_decode($instructor->availability_hours, true); // Decode availability_hours JSON
+
         $existingSchedules = ClassSchedule::where('room_id', $roomId)->get();
 
         $start = strtotime('07:30');
@@ -27,27 +35,34 @@ class ClassScheduleController extends Controller
 
         $availableSlots = [];
 
-        for ($time = $start; $time < $end; $time += $interval) {
-            $slotStart = date('H:i', $time);
-            $slotEnd = date('H:i', $time + $interval);
+        foreach ($availabilityHours as $day => $timeRanges) {
+            foreach ($timeRanges as $timeRange) {
+                [$rangeStart, $rangeEnd] = explode('-', $timeRange);
+                $rangeStartTimestamp = strtotime($rangeStart);
+                $rangeEndTimestamp = strtotime($rangeEnd);
 
-            foreach (['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] as $day) {
-                // Check for schedule conflicts
-                $conflict = $existingSchedules->first(
-                    fn($schedule) =>
-                    $schedule->day_of_week === $day &&
-                    (($slotStart >= $schedule->start_time && $slotStart < $schedule->end_time) ||
-                        ($slotEnd > $schedule->start_time && $slotEnd <= $schedule->end_time))
-                );
+                for ($time = max($start, $rangeStartTimestamp); $time < min($end, $rangeEndTimestamp); $time += $interval) {
+                    $slotStart = date('H:i', $time);
+                    $slotEnd = date('H:i', $time + $interval);
 
-                if (!$conflict) {
-                    $availableSlots[$day][] = ['start_time' => $slotStart, 'end_time' => $slotEnd];
+                    // Check for schedule conflicts
+                    $conflict = $existingSchedules->first(
+                        fn($schedule) =>
+                        $schedule->day_of_week === $day &&
+                        (($slotStart >= $schedule->start_time && $slotStart < $schedule->end_time) ||
+                            ($slotEnd > $schedule->start_time && $slotEnd <= $schedule->end_time))
+                    );
+
+                    if (!$conflict) {
+                        $availableSlots[$day][] = ['start_time' => $slotStart, 'end_time' => $slotEnd];
+                    }
                 }
             }
         }
 
         return response()->json($availableSlots);
     }
+
 
 
     /**
