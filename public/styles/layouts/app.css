@@ -9,7 +9,10 @@
 
 main {
     min-height: 100vh;
+    padding-left: 20vw;
+    padding-top: 80px; /* Adjust the padding to ensure the body content is not covered by the fixed navbar */
 }
+
 
 /* General modal styles */
 .modal {
@@ -168,6 +171,8 @@ main {
     min-width: 100%;
     flex-direction: column;
     margin-top: 10px;
+    z-index: 1000;
+    position: relative;
 }
 
 .footer-container {
@@ -254,3 +259,72 @@ main {
     height: 10px;
     height: auto;
 }
+
+/* Sidebar Styles */
+.sidebar {
+    height: 100vh;
+    width: 250px;
+    background-color: #043b1b;
+    color: white;
+    position: fixed;
+    top: 8vh;
+    left: 0;
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 0;
+}
+
+.sidebar .logo {
+    padding: 20px;
+    text-align: center;
+}
+
+.sidebar .logo img {
+    width: 100px;
+    margin-bottom: 10px;
+}
+
+.sidebar .logo h3 {
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.sidebar .menu {
+    flex-grow: 1;
+    padding-left: 20px;
+}
+
+.sidebar .menu a {
+    display: block;
+    color: white;
+    text-decoration: none;
+    padding: 10px;
+    margin-bottom: 15px;
+    font-size: 0.95em;
+    transition: background-color 0.3s;
+}
+
+.sidebar .menu a:hover {
+    background-color: #2d5a3c;
+    border-radius: 5px;
+}
+
+
+/* Navbar styles */
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #043b1b; /* Vibrant green color */
+    padding: 10px 40px;
+    color: white;
+    margin-bottom: 0; /* Remove bottom margin */
+    position: fixed; /* Fixed position to stay at the top */
+    width: 100%; /* Full width */
+    top: 0; /* Stick to the top */
+    z-index: 1000; /* Ensure it stays on top of other content */
+}
+
+

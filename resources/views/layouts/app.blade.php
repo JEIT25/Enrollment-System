@@ -7,6 +7,7 @@
     <link rel="icon" href="{{ asset('images/logos/csucc-logo.png') }}" type="image/png">
     <title>@yield('page-title')</title>
     <link rel="stylesheet" href="{{ asset('styles/layouts/app.css') }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     @yield('styles')
 </head>
 
@@ -20,13 +21,33 @@
         </a>
         <div class="navbar-links">
             <a href="#">Log In</a>
-            <a href="#">About</a>
         </div>
     </nav>
 
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <img src="{{ asset('images/logos/admin-logo.png') }}" alt="Logo">
+            <h3>
+                Admin
+                @auth
+                    {{ Auth::user()->first_name }} {{ Auth::user()->last_name ?? 'Admin' }}
+                @endauth
+            </h3>
+        </div>
+        <div class="menu">
+            <a href="#">Dashboard</a>
+            <a href="{{ route('class-schedules.index') }}">Class Schedules</a>
+            <a href="{{route('enrollments.create')}}">Enrollments</a>
+            <a href="#">Instructors</a>
+            <a href="#">Subjects</a>
+            <a href="#">Students</a>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main>
-
         @yield('main-content')
     </main>
 

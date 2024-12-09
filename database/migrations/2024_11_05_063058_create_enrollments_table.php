@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('enrollments', function (Blueprint $table) {
             $table->id('enrollment_id');
-            $table->unsignedBigInteger('student_id')->unique();
-            $table->unsignedBigInteger('schedule_id')->unique();
+            $table->unsignedBigInteger('student_id');
+            $table->unsignedBigInteger('schedule_id');
             $table->date('date_enrolled');
-            $table->decimal('grade', 4, 2);
+            $table->decimal('grade', 4, 2)->nullable();
             $table->enum("status", allowed: ['Enrolled', 'Completed', 'Dropped', 'Waitlisted'])->default('Enrolled');
 
             $table->foreign('student_id')

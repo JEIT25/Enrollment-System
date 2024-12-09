@@ -8,6 +8,18 @@
             padding: 1rem;
             width: 100%;
             justify-content: center;
+            min-height: 100vh;
+            padding-left: 10vw;
+            padding-top: 8vh;
+        }
+
+        ul {
+            display: flex;
+            flex-direction: column;
+        }
+
+        li {
+            list-style: none;
         }
 
         .left-side {
@@ -17,6 +29,7 @@
             gap: 1rem;
             min-width: 300px;
             max-width: 800px;
+            height: 100vh;
         }
 
         .right-side {
@@ -68,7 +81,7 @@
             color: white;
             border-radius: 8px;
             overflow-y: auto;
-            max-height: 90vh;
+            padding: 1rem;
         }
 
         .items {
@@ -137,6 +150,11 @@
             color: white;
         }
 
+        .schedule-item {
+            display: flex;
+            flex-direction: column;
+        }
+
 
         button[type="submit"] {
             padding: 0.5rem 1rem;
@@ -147,6 +165,8 @@
             font-size: 1rem;
             cursor: pointer;
             transition: background-color 0.2s;
+            margin-top: 20px;
+            min-width: 100%;
         }
 
         button[type="submit"]:hover {
@@ -181,6 +201,7 @@
                 <div class="draggable-container">
                     <h3>Available Items</h3>
                     <div class="items" id="items-container">
+
                         <div class="section">
                             <h4>Instructors</h4>
                             @foreach ($instructors as $instructor)
@@ -188,15 +209,38 @@
                                     data-id="{{ $instructor->instructor_id }}">
                                     <strong>Name:</strong> {{ $instructor->first_name }} {{ $instructor->last_name }}<br>
                                     <strong>Email:</strong> {{ $instructor->email }}<br>
+                                    <strong>Availability Hours:</strong>
+                                    <ul>
+                                        @php
+                                            $availabilityHours = json_decode($instructor->availability_hours, true);
+                                            $convertTo12Hour = function ($timeRange) {
+                                                [$start, $end] = explode('-', $timeRange);
+                                                $startTime = \Carbon\Carbon::createFromFormat('H:i', $start)->format(
+                                                    'g:i A',
+                                                );
+                                                $endTime = \Carbon\Carbon::createFromFormat('H:i', $end)->format(
+                                                    'g:i A',
+                                                );
+                                                return $startTime . ' - ' . $endTime;
+                                            };
+                                        @endphp
+                                        @foreach ($availabilityHours as $day => $hours)
+                                            <li>
+                                                <strong>{{ $day }}:</strong>
+                                                {{ implode(', ', array_map($convertTo12Hour, $hours)) }}||
+                                            </li>
+                                        @endforeach
+                                    </ul>
                                 </div>
                             @endforeach
                         </div>
+
 
                         <div class="section">
                             <h4>Rooms</h4>
                             @foreach ($rooms as $room)
                                 <div class="draggable-item" draggable="true" data-type="room"
-                                    data-id="{{ $room->room_id }}">
+                                    data-capacity="{{ $room->room_capacity }}" data-id="{{ $room->room_id }}">
                                     <strong>Building:</strong> {{ $room->building_name }}<br>
                                     <strong>Room Number:</strong> {{ $room->room_number }}<br>
                                     <strong>Capacity:</strong> {{ $room->room_capacity }}
@@ -247,11 +291,19 @@
 
 @section('scripts')
     <script>
-        const searchBar = document.querySelector('#search-bar');
-        const searchButton = document.querySelector('#search-button');
-        const itemsContainer = document.querySelector('#items-container');
-
         document.addEventListener('DOMContentLoaded', () => {
+            const searchBar = document.querySelector('#search-bar');
+            const itemsContainer = document.querySelector('#items-container')
+
+            // Prevent form submission when pressing Enter in the search bar
+            searchBar.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault(); // Stop the default submit action
+                    // You can add your search logic here
+                    console.log('Search triggered:', searchBar.value);
+                }
+            });
+
 
             searchBar.addEventListener('input', () => {
                 const query = searchBar.value.toLowerCase();
@@ -273,7 +325,8 @@
                 },
                 room: {
                     element: document.querySelector('#selected-room'),
-                    input: document.querySelector('#form-room')
+                    input: document.querySelector('#form-room'),
+                    capacity: null,
                 },
                 subject: {
                     element: document.querySelector('#selected-subject'),
@@ -291,10 +344,13 @@
             fetchScheduleButton.classList.add('search-button');
             rightSideContainer.appendChild(fetchScheduleButton);
 
-            const updateSelectedCard = (type, content, id) => {
+            const updateSelectedCard = (type, content, id, capacity) => {
                 selectedItems[type].element.innerHTML =
                     `<h4>${type.charAt(0).toUpperCase() + type.slice(1)}</h4><p>${content}</p>`;
                 selectedItems[type].input.value = id;
+                if (type == "room") {
+                    selectedItems.room.capacity = capacity
+                }
             };
 
             const checkSelectionsComplete = () => {
@@ -312,6 +368,7 @@
                     e.dataTransfer.setData('type', item.dataset.type);
                     e.dataTransfer.setData('id', item.dataset.id);
                     e.dataTransfer.setData('content', item.textContent.trim());
+                    e.dataTransfer.setData('capacity', item.dataset.capacity);
                 });
             });
 
@@ -324,35 +381,44 @@
                 const type = e.dataTransfer.getData('type');
                 const id = e.dataTransfer.getData('id');
                 const content = e.dataTransfer.getData('content');
+                const capacity = e.dataTransfer.getData('capacity');
 
                 if (selectedItems[type]) {
-                    updateSelectedCard(type, content, id);
+                    updateSelectedCard(type, content, id, capacity);
                     enableFetchButton();
                 }
             });
 
-fetchScheduleButton.addEventListener('click', async () => {
-    const roomId = selectedItems.room.input.value;
-    const instructorId = selectedItems.instructor.input.value;
-    const subjectId = selectedItems.subject.input.value;
+            fetchScheduleButton.addEventListener('click', async () => {
+                const roomId = selectedItems.room.input.value;
+                const instructorId = selectedItems.instructor.input.value;
+                const subjectId = selectedItems.subject.input.value;
+                const roomCapacity = selectedItems.room.capacity;
 
-    try {
-        const response = await fetch(
-            `/class-schedules/get-available-schedules?room_id=${roomId}&instructor_id=${instructorId}&subject_id=${subjectId}`
-        );
-        if (!response.ok) throw new Error('Failed to fetch schedules');
+                try {
+                    const response = await fetch(
+                        `/class-schedules/get-available-schedules?room_id=${roomId}&instructor_id=${instructorId}&subject_id=${subjectId}`
+                    );
+                    if (!response.ok) throw new Error('Failed to fetch schedules');
 
-        const schedules = await response.json();
+                    const schedules = await response.json();
 
-        // Create a container for the schedule inputs
-        const scheduleContainer = document.createElement('div');
-        scheduleContainer.id = 'generated-schedule';
+                    // Create a container for the schedule inputs
+                    const scheduleContainer = document.createElement('div');
+                    scheduleContainer.id = 'generated-schedule';
 
-        if (Object.keys(schedules).length > 0) {
-            // Create day selection dropdown
-            const days = Object.keys(schedules);
-            scheduleContainer.innerHTML = `
+                    if (Object.keys(schedules).length > 0) {
+                        // Create day selection dropdown
+                        const days = Object.keys(schedules);
+                        scheduleContainer.innerHTML = `
                 <div class="schedule-item">
+                    <label for="semester">Semester</label>
+                    <select id="semester" name="semester">
+                        <option value="First">1st</option>
+                        <option value="Second">2nd</option>
+                        <option value="Summer">Summer</option>
+                    </select>
+
                     <label for="day-of-week">Day of the Week:</label>
                     <select id="day-of-week" name="day_of_week">
                         ${days.map(day => `<option value="${day}">${day}</option>`).join('')}
@@ -363,42 +429,77 @@ fetchScheduleButton.addEventListener('click', async () => {
 
                     <label for="end-time">End Time:</label>
                     <select id="end-time" name="end_time"></select>
+
+                    <input hidden readonly type="number" id="max_students" name="max_students" value=${selectedItems.room.capacity}></input>
+
                 </div>
             `;
 
-            // Clear existing schedule and append the new one
-            const existingSchedule = document.getElementById('generated-schedule');
-            if (existingSchedule) existingSchedule.remove();
-            rightSideContainer.appendChild(scheduleContainer);
+                        //create the submit button if the response is ok
+                        const submitBtn = document.createElement('button');
+                        submitBtn.textContent = 'submit';
+                        submitBtn.type = 'submit';
+                        submitBtn.classList.add('search-button');
+                        submitBtn.classList.add('submitBtn');
+                        scheduleContainer.appendChild(submitBtn);
 
-            const daySelect = document.getElementById('day-of-week');
-            const startTimeSelect = document.getElementById('start-time');
-            const endTimeSelect = document.getElementById('end-time');
+                        // Clear existing schedule and append the new one
+                        const existingSchedule = document.getElementById('generated-schedule');
+                        if (existingSchedule) existingSchedule.remove();
+                        rightSideContainer.appendChild(scheduleContainer);
 
-            const updateTimeOptions = (day) => {
-                const daySchedules = schedules[day] || [];
-                const startTimes = [...new Set(daySchedules.map(s => s.start_time))];
-                const endTimes = [...new Set(daySchedules.map(s => s.end_time))];
+                        const daySelect = document.getElementById('day-of-week');
+                        const startTimeSelect = document.getElementById('start-time');
+                        const endTimeSelect = document.getElementById('end-time');
 
-                startTimeSelect.innerHTML = startTimes.map(start => `<option value="${start}">${start}</option>`).join('');
-                endTimeSelect.innerHTML = endTimes.map(end => `<option value="${end}">${end}</option>`).join('');
-            };
+                        // Function to convert 24-hour time to 12-hour format
+                        function to12HourFormat(time) {
+                            const [hours, minutes] = time.split(':');
+                            const period = +hours >= 12 ? 'PM' : 'AM';
+                            const adjustedHours = +hours % 12 || 12; // Convert to 12-hour format
+                            return `${adjustedHours}:${minutes} ${period}`;
+                        }
 
-            // Update times on day selection change
-            daySelect.addEventListener('change', () => {
-                updateTimeOptions(daySelect.value);
+
+                        const updateTimeOptions = (day) => {
+                            const daySchedules = schedules[day] || [];
+                            const startTimes = [...new Set(daySchedules.map(s => s.start_time))];
+                            const endTimes = [...new Set(daySchedules.map(s => s.end_time))];
+
+                            // Populate start time options
+                            startTimeSelect.innerHTML = startTimes.map(start =>
+                                    `<option value="${start}">${to12HourFormat(start)}</option>`)
+                                .join('');
+
+                            // Populate end time options
+                            endTimeSelect.innerHTML = endTimes.map(end =>
+                                `<option value="${end}">${to12HourFormat(end)}</option>`).join(
+                                '');
+                        };
+
+                        // Update times on day selection change
+                        daySelect.addEventListener('change', () => {
+                            updateTimeOptions(daySelect.value);
+                        });
+
+                        startTimeSelect.addEventListener('change', () => {
+                            validateTimeSelection(startTimeSelect, endTimeSelect)
+                        })
+
+                        endTimeSelect.addEventListener('change', () => {
+                            validateTimeSelection(startTimeSelect, endTimeSelect)
+                        })
+
+                        // Initialize options for the first day
+                        updateTimeOptions(days[0]);
+                    } else {
+                        alert('No available schedules found.');
+                    }
+                } catch (error) {
+                    alert('Error fetching available schedules. Please try again.');
+                    console.error(error);
+                }
             });
-
-            // Initialize options for the first day
-            updateTimeOptions(days[0]);
-        } else {
-            alert('No available schedules found.');
-        }
-    } catch (error) {
-        alert('Error fetching available schedules. Please try again.');
-        console.error(error);
-    }
-});
 
 
             // Function to validate that end_time is not less than or equal to start_time
