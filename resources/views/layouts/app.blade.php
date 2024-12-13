@@ -40,8 +40,8 @@
             <a href="#">Dashboard</a>
             <a href="{{ route('class-schedules.index') }}">Class Schedules</a>
             <a href="{{route('enrollments.create')}}">Enrollments</a>
-            <a href="#">Instructors</a>
-            <a href="#">Subjects</a>
+            <a href="{{route('instructors.index')}}">Instructors</a>
+            <a href="{{route('subjects.index')}}">Subjects</a>
             <a href="#">Students</a>
         </div>
     </div>

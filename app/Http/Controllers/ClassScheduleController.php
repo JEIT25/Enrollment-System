@@ -6,9 +6,94 @@ use App\Models\ClassSchedule;
 use App\Models\Instructor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\Subject;
+use App\Models\Student;
 
 class ClassScheduleController extends Controller
 {
+
+    public function timetable(Request $request)
+    {
+        // Fetch filters from the request
+        $semester = $request->input('semester');
+        $subject = $request->input('subject');
+        $student = $request->input('student');
+        $instructor = $request->input('instructor');
+
+        // Start building the query
+        $query = DB::table(table: 'class_schedules')
+            ->leftJoin('subjects', 'class_schedules.subject_id', '=', 'subjects.subject_id')
+            ->leftJoin('instructors', 'class_schedules.instructor_id', '=', 'instructors.instructor_id')
+            ->leftJoin('enrollments', 'enrollments.schedule_id', '=', 'class_schedules.schedule_id')
+            ->leftJoin('students', 'students.student_id', '=', 'enrollments.student_id')
+            ->select(
+                'class_schedules.*',
+                'subjects.*',
+                'instructors.*',
+                'enrollments.*',
+                'students.*',
+                'students.first_name as student_first_name',
+                'students.last_name as studet_last_name',
+                'instructors.first_name as instructor_first_name',
+                'instructors.last_name as instructor_last_name'
+            );
+
+        dd($query->get());
+
+        // Apply filters
+        if ($semester) {
+            $query->where('class_schedules.semester', $semester);
+        }
+
+        if ($subject) {
+            $query->where('subjects.name', 'like', '%' . $subject . '%');
+        }
+
+        if ($student) {
+            $query->where('students.id', $student);
+        }
+
+        if ($instructor) {
+            $query->where('instructors.name', 'like', '%' . $instructor . '%');
+        }
+
+        // Retrieve filtered schedules
+        $schedules = $query->get();
+
+        // Process data into timetable format
+        $timetable = $this->formatTimetable($schedules);
+
+        // Return view with the data
+        return view('timetable.index', compact('timetable', 'semester', 'subject', 'student', 'instructor'));
+    }
+
+    private function formatTimetable($schedules)
+    {
+        $timetable = [];
+
+        // Initialize timetable structure
+        foreach (['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as $day) {
+            $timetable[$day] = [];
+            for ($i = 7; $i <= 17; $i++) {
+                $timetable[$day]["{$i}:00 - {$i}:30"] = null;
+            }
+        }
+
+        // Populate timetable with schedule data
+        foreach ($schedules as $schedule) {
+            $day = $schedule->day; // Assuming 'day' is a column in the class_schedules table
+            $timeSlot = $schedule->time_start . ' - ' . $schedule->time_end;
+            $timetable[$day][$timeSlot] = [
+                'subject' => $schedule->subject_name,
+                'room' => $schedule->room,
+                'instructor' => $schedule->instructor_name,
+            ];
+        }
+
+        return $timetable;
+    }
+
+
     public function getAllAvailableSchedules(Request $request)
     {
         $roomId = $request->query('room_id');

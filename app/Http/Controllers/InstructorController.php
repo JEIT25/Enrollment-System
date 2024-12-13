@@ -34,36 +34,52 @@ class InstructorController extends Controller
     }
 
     // Store a new instructor
+
     public function store(Request $request)
     {
-        // Validation Rules
+
+        // dd($request->all());
+        // Validate the incoming request
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'department_id' => 'required|exists:departments,department_id',
-            'email' => 'required|email|unique:instructors,email',
-            'availability_hours' => 'required|array',
+            'department_id' => 'required|integer|exists:departments,department_id',
+            'email' => 'required|email|max:255|unique:instructors,email',
+            'availability_hours' => 'required|json', // Validate the JSON format
         ]);
 
-        // Format Availability Hours to JSON
-        $availabilityHours = [];
-        foreach ($validated['availability_hours'] as $day => $slots) {
-            if (!empty($slots)) {
-                $availabilityHours[$day] = $slots;
+        // Decode the JSON availability data
+        $availability = json_decode($validated['availability_hours'], true);
+
+        // Validate the structure of the decoded availability array
+        foreach ($availability as $day => $slots) {
+            if (!is_array($slots)) {
+                return redirect()->back()->withErrors([
+                    'availability_hours' => 'The availability data must be properly structured.',
+                ]);
+            }
+
+            foreach ($slots as $slot) {
+                if (!preg_match('/^([0-1][0-9]|2[0-3]):[0-5][0-9]-([0-1][0-9]|2[0-3]):[0-5][0-9]$/', $slot)) {
+                    return redirect()->back()->withErrors([
+                        'availability_hours' => "Invalid time slot format: {$slot} for {$day}. Time must follow the format HH:MM-HH:MM.",
+                    ]);
+                }
             }
         }
 
-        // Insert into database
-        DB::table('instructors')->insert([
+        // Create the instructor
+        Instructor::create([
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'],
             'department_id' => $validated['department_id'],
             'email' => $validated['email'],
-            'availability_hours' => json_encode($availabilityHours), // Store as JSON
+            'availability_hours' => json_encode($availability), // Store as JSON in the database
         ]);
 
         return redirect()->route('instructors.index')->with('success', 'Instructor added successfully!');
     }
+
 
     /**
      * Display the specified resource.
@@ -92,8 +108,12 @@ class InstructorController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        //
+        // Perform a raw query to delete the instructor
+        DB::table('instructors')->where('instructor_id', $id)->delete();
+
+
+        return redirect()->route('instructors.index')->with('success', 'Instructor deleted successfully!');
     }
 }
