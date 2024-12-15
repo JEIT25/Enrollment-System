@@ -3,7 +3,7 @@
 
 
 
-# Running a Cloned Smart Recyclable Waste Monitoring system Project
+# Running a Cloned Enrollment System focused on scheduling system project
 
 E Follow ni nga mga steps para ma pa run ninyo ang ang project after ninyo ma download
 
