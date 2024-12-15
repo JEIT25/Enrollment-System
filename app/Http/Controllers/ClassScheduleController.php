@@ -62,27 +62,29 @@ class ClassScheduleController extends Controller
         // Retrieve filtered schedules
         $schedules = $query->get();
 
+
         // Process data into timetable format
         $timetable = $this->formatTimetable($schedules);
+
 
         // Return view with the data
         return view('timetable.index', compact('timetable', 'semester', 'room', 'subject', 'instructor', 'rooms'));
     }
-
     private function formatTimetable($schedules)
     {
         $timetable = [];
 
         // Define the range of times: 7:00 AM to 7:30 PM
         $startHour = 7;
-        $endHour = 19; // 7:30 PM
+        $endHour = 19; // 7:00 PM
         $timeSlots = [];
 
-        // Generate all time slots in 30-minute intervals
+        // Generate all time slots from 7:00 AM to 7:30 PM in 30-minute intervals
         for ($hour = $startHour; $hour <= $endHour; $hour++) {
             $formattedHour = str_pad($hour, 2, '0', STR_PAD_LEFT);
             $nextHour = str_pad($hour + 1, 2, '0', STR_PAD_LEFT);
 
+            // Add 30-minute intervals for each hour (e.g., 7:00 - 7:30, 7:30 - 8:00, ...)
             $timeSlots[] = "{$formattedHour}:00 - {$formattedHour}:30";
             if ($hour < $endHour) {
                 $timeSlots[] = "{$formattedHour}:30 - {$nextHour}:00";
@@ -98,24 +100,40 @@ class ClassScheduleController extends Controller
         foreach ($schedules as $schedule) {
             $day = $schedule->day_of_week;
 
-            // Convert start_time and end_time to 'HH:MM'
-            $startTime = date('H:i', strtotime($schedule->start_time));
-            $endTime = date('H:i', strtotime($schedule->end_time));
-            $timeSlot = "{$startTime} - {$endTime}";
+            // Convert start_time and end_time to 'H:i'
+            $startTime = strtotime($schedule->start_time);
+            $endTime = strtotime($schedule->end_time);
 
-            // Ensure time slot exists in timetable (to avoid time range mismatches)
-            if (isset($timetable[$day][$timeSlot])) {
-                $timetable[$day][$timeSlot][] = [
-                    'subject_code' => $schedule->subject_code,
-                    'subject_name' => $schedule->subject_name,
-                    'room' => "{$schedule->room_building} - {$schedule->room_number}",
-                    'instructor' => "{$schedule->instructor_first_name} {$schedule->instructor_last_name}",
-                ];
+            // Ensure time slots are dynamically populated based on actual schedule start and end time
+            $currentTime = $startTime;
+
+            // Loop through time slots based on the start and end time of the schedule
+            while ($currentTime < $endTime) {
+                $startFormatted = date('H:i', $currentTime);
+                $nextTime = strtotime('+30 minutes', $currentTime); // Increment by 30 minutes
+                $endFormatted = date('H:i', $nextTime);
+
+                $timeSlot = "{$startFormatted} - {$endFormatted}";
+
+                // Ensure time slot exists in timetable and populate with schedule data
+                if (isset($timetable[$day][$timeSlot])) {
+                    $timetable[$day][$timeSlot][] = [
+                        'subject_code' => $schedule->subject_code,
+                        'subject_name' => $schedule->subject_name,
+                        'room' => "{$schedule->room_building} - {$schedule->room_number}",
+                        'instructor' => "{$schedule->instructor_first_name} {$schedule->instructor_last_name}",
+                    ];
+                }
+
+                // Move to the next time slot
+                $currentTime = $nextTime;
             }
         }
 
         return $timetable;
     }
+
+
 
 
 

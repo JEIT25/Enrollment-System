@@ -27,24 +27,24 @@ class DatabaseSeeder extends Seeder
             'email' => 'joseph.vistal@csucc.edu.ph',
         ]);
 
-        Student::factory(50)->create();
-        Room::factory(10)->create();
-        Department::factory()->create([
-            'department_name' => 'College Of Engineering And Information Technology'
-        ]);
-        Department::factory()->create([
-            'department_name' => 'College Of Business And Accountancy'
-        ]);
-        Department::factory()->create([
-            'department_name' => 'College Of Tourism And Hospitality Management'
-        ]);
-        Department::factory()->create([
-            'department_name' => 'College Of Industrial Technology And Teacher Education'
-        ]);
+        // Student::factory(50)->create();
+        // Room::factory(10)->create();
+        // Department::factory()->create([
+        //     'department_name' => 'College Of Engineering And Information Technology'
+        // ]);
+        // Department::factory()->create([
+        //     'department_name' => 'College Of Business And Accountancy'
+        // ]);
+        // Department::factory()->create([
+        //     'department_name' => 'College Of Tourism And Hospitality Management'
+        // ]);
+        // Department::factory()->create([
+        //     'department_name' => 'College Of Industrial Technology And Teacher Education'
+        // ]);
 
-        // Instructor::factory(10)->create();
-        Subject::factory(10)->create();
-        ClassSchedule::factory(10)->create();
-        Enrollment::factory(50)->create();
+        // // Instructor::factory(10)->create();
+        // Subject::factory(10)->create();
+        // ClassSchedule::factory(10)->create();
+        // Enrollment::factory(50)->create();
     }
 }

@@ -102,7 +102,7 @@
         .filter-form {
             margin-bottom: 1.5rem;
             background-color: white;
-            padding: 1rem;
+            padding: 3rem;
             border: 1px solid #ddd;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -113,6 +113,7 @@
             gap: 1.5rem;
             flex-wrap: wrap;
             align-items: center;
+            justify-content: center;
         }
 
         .filter-item {
