@@ -20,7 +20,6 @@ class StudentController extends Controller
     {
         return view('students.create');
     }
-
     public function store(Request $request)
     {
         // Validate and insert student data
@@ -36,18 +35,22 @@ class StudentController extends Controller
             'financial_hold' => 'required|boolean',
         ]);
 
-        DB::table('students')->insert($validated);
+        // Create new student using Eloquent
+        Student::create($validated);
 
         return redirect()->route('students.index')->with('success', 'Student added successfully!');
     }
 
+
     public function destroy($id)
     {
-        // Delete a student using a raw query
-        DB::table('students')->where('student_id', $id)->delete();
+        // Find the student by their ID and delete using Eloquent
+        $student = Student::findOrFail($id);  // This will find the student by the primary key (assuming 'id' is the primary key)
+        $student->delete();  // Delete the student record
 
         return redirect()->route('students.index')->with('success', 'Student deleted successfully!');
     }
+
     /**
      * Display the specified resource.
      */

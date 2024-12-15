@@ -11,50 +11,52 @@ use App\Models\Student;
 
 class ClassScheduleController extends Controller
 {
-
     public function timetable(Request $request)
     {
         // Fetch filters from the request
         $semester = $request->input('semester');
+        $room = $request->input('room');
         $subject = $request->input('subject');
-        $student = $request->input('student');
         $instructor = $request->input('instructor');
 
-        // Start building the query
-        $query = DB::table(table: 'class_schedules')
+        // Fetch all unique rooms for dropdown
+        $rooms = DB::table('rooms')
+            ->select('room_id', 'building_name', 'room_number')
+            ->distinct()
+            ->get();
+
+        // Start query to retrieve timetable data
+        $query = DB::table('class_schedules')
             ->leftJoin('subjects', 'class_schedules.subject_id', '=', 'subjects.subject_id')
             ->leftJoin('instructors', 'class_schedules.instructor_id', '=', 'instructors.instructor_id')
-            ->leftJoin('enrollments', 'enrollments.schedule_id', '=', 'class_schedules.schedule_id')
-            ->leftJoin('students', 'students.student_id', '=', 'enrollments.student_id')
+            ->leftJoin('rooms', 'rooms.room_id', '=', 'class_schedules.room_id')
             ->select(
-                'class_schedules.*',
-                'subjects.*',
-                'instructors.*',
-                'enrollments.*',
-                'students.*',
-                'students.first_name as student_first_name',
-                'students.last_name as studet_last_name',
-                'instructors.first_name as instructor_first_name',
-                'instructors.last_name as instructor_last_name'
+                'class_schedules.day_of_week',
+                'class_schedules.start_time',
+                'class_schedules.end_time',
+                'subjects.subject_code',
+                'subjects.subject_name',
+                'rooms.building_name as room_building',
+                'rooms.room_number',
+                'instructors.first_name AS instructor_first_name',
+                'instructors.last_name AS instructor_last_name'
             );
-
-        dd($query->get());
 
         // Apply filters
         if ($semester) {
             $query->where('class_schedules.semester', $semester);
         }
 
-        if ($subject) {
-            $query->where('subjects.name', 'like', '%' . $subject . '%');
+        if ($room) {
+            $query->where('rooms.room_number', $room);
         }
 
-        if ($student) {
-            $query->where('students.id', $student);
+        if ($subject) {
+            $query->where('subjects.subject_name', 'like', '%' . $subject . '%');
         }
 
         if ($instructor) {
-            $query->where('instructors.name', 'like', '%' . $instructor . '%');
+            $query->where(DB::raw("CONCAT(instructors.first_name, ' ', instructors.last_name)"), 'like', '%' . $instructor . '%');
         }
 
         // Retrieve filtered schedules
@@ -64,34 +66,58 @@ class ClassScheduleController extends Controller
         $timetable = $this->formatTimetable($schedules);
 
         // Return view with the data
-        return view('timetable.index', compact('timetable', 'semester', 'subject', 'student', 'instructor'));
+        return view('timetable.index', compact('timetable', 'semester', 'room', 'subject', 'instructor', 'rooms'));
     }
 
     private function formatTimetable($schedules)
     {
         $timetable = [];
 
-        // Initialize timetable structure
-        foreach (['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as $day) {
-            $timetable[$day] = [];
-            for ($i = 7; $i <= 17; $i++) {
-                $timetable[$day]["{$i}:00 - {$i}:30"] = null;
+        // Define the range of times: 7:00 AM to 7:30 PM
+        $startHour = 7;
+        $endHour = 19; // 7:30 PM
+        $timeSlots = [];
+
+        // Generate all time slots in 30-minute intervals
+        for ($hour = $startHour; $hour <= $endHour; $hour++) {
+            $formattedHour = str_pad($hour, 2, '0', STR_PAD_LEFT);
+            $nextHour = str_pad($hour + 1, 2, '0', STR_PAD_LEFT);
+
+            $timeSlots[] = "{$formattedHour}:00 - {$formattedHour}:30";
+            if ($hour < $endHour) {
+                $timeSlots[] = "{$formattedHour}:30 - {$nextHour}:00";
             }
+        }
+
+        // Initialize timetable structure for each day with time slots
+        foreach (['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] as $day) {
+            $timetable[$day] = array_fill_keys($timeSlots, []); // Initialize all slots as empty arrays
         }
 
         // Populate timetable with schedule data
         foreach ($schedules as $schedule) {
-            $day = $schedule->day; // Assuming 'day' is a column in the class_schedules table
-            $timeSlot = $schedule->time_start . ' - ' . $schedule->time_end;
-            $timetable[$day][$timeSlot] = [
-                'subject' => $schedule->subject_name,
-                'room' => $schedule->room,
-                'instructor' => $schedule->instructor_name,
-            ];
+            $day = $schedule->day_of_week;
+
+            // Convert start_time and end_time to 'HH:MM'
+            $startTime = date('H:i', strtotime($schedule->start_time));
+            $endTime = date('H:i', strtotime($schedule->end_time));
+            $timeSlot = "{$startTime} - {$endTime}";
+
+            // Ensure time slot exists in timetable (to avoid time range mismatches)
+            if (isset($timetable[$day][$timeSlot])) {
+                $timetable[$day][$timeSlot][] = [
+                    'subject_code' => $schedule->subject_code,
+                    'subject_name' => $schedule->subject_name,
+                    'room' => "{$schedule->room_building} - {$schedule->room_number}",
+                    'instructor' => "{$schedule->instructor_first_name} {$schedule->instructor_last_name}",
+                ];
+            }
         }
 
         return $timetable;
     }
+
+
 
 
     public function getAllAvailableSchedules(Request $request)
@@ -170,12 +196,12 @@ class ClassScheduleController extends Controller
             ->join('instructors', 'class_schedules.instructor_id', '=', 'instructors.instructor_id')
             ->join('rooms', 'class_schedules.room_id', '=', 'rooms.room_id')
             ->select(
-        'class_schedules.*', // Select all columns from class_schedules
-        'subjects.*', // Select all columns from subjects
-        'instructors.*', // Select all columns from instructors
-        'rooms.*' // Select all columns from rooms
-    )
-    ->get();
+                'class_schedules.*', // Select all columns from class_schedules
+                'subjects.*', // Select all columns from subjects
+                'instructors.*', // Select all columns from instructors
+                'rooms.*' // Select all columns from rooms
+            )
+            ->get();
 
         return view('class-schedules.index', compact('schedules'));
     }
@@ -207,7 +233,7 @@ class ClassScheduleController extends Controller
     public function store(Request $request)
     {
 
-             // Validation
+        // Validation
         try {
             $validatedData = $request->validate([
                 'subject_id' => 'required|exists:subjects,subject_id',
@@ -261,6 +287,7 @@ class ClassScheduleController extends Controller
         ]);
 
         $schedule->save();
+
 
         // Return with a success message (schedule created successfully)
         return redirect()->back()->with('success', 'Class schedule created successfully.');
@@ -319,12 +346,22 @@ class ClassScheduleController extends Controller
      */
     public function destroy($id)
     {
-        $classSchedule = ClassSchedule::where('schedule_id',$id);
+        // Retrieve the ClassSchedule by its schedule_id
+        $classSchedule = ClassSchedule::where('schedule_id', $id)->first();
 
+        if (!$classSchedule) {
+            // If no record is found, you can handle it as needed (e.g., return an error)
+            return redirect()->route('class-schedules.index')
+                ->with('error', 'Class schedule not found.');
+        }
+
+        // Delete the ClassSchedule
         $classSchedule->delete();
 
+        // Return with a success message (class schedule deleted successfully)
         return redirect()->route('class-schedules.index')
             ->with('success', 'Class schedule deleted successfully.');
     }
+
 
 }

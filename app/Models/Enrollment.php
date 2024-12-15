@@ -29,8 +29,8 @@ class Enrollment extends Model
                 'student_id' => $enrollment->student_id,
                 'schedule_id' => $enrollment->schedule_id,
                 'date_enrolled' => $enrollment->date_enrolled,
-                'grade' => $enrollment->grade,
-                'status' => $enrollment->status,
+                'grade' => $enrollment->grade ?? 0.00,
+                'status' => $enrollment->status ?? "Enrolled",
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

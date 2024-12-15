@@ -5,6 +5,7 @@ body {
 main {
     display: flex;
     align-items: center;
+    padding-left: 15vw;
 }
 
 .carousel-container {

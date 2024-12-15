@@ -117,25 +117,53 @@ class EnrollmentController extends Controller
     public function store(Request $request)
     {
         $studentId = $request->input('student_id');
-        $scheduleId = $request->input('schedule_id');
+        $scheduleIds = $request->input('schedule_id'); // Expecting an array of schedule IDs
 
-
-        // Check for conflicts before enrolling
-        $conflictCheck = $this->checkScheduleConflicts($request);
-
-        if ($conflictCheck->getData()->conflict) {
-            return response()->json(['error' => 'Cannot enroll due to schedule conflict.'], 409);
+        if (!is_array($scheduleIds) || empty($scheduleIds)) {
+            return response()->json(['error' => 'Invalid or empty schedule data provided.'], 422);
         }
 
-        // Enroll the student
-        DB::table('enrollments')->insert([
-            'student_id' => $studentId,
-            'schedule_id' => $scheduleId[0],
-            'date_enrolled' => now()
-        ]);
+        $enrolledSchedules = [];
+        $conflicts = [];
 
-    return response()->json(['success' => true, 'message' => 'Student enrolled successfully.'], 201);
+        foreach ($scheduleIds as $scheduleId) {
+            // Set up the request to check for conflicts
+            $request->merge(['schedule_id' => $scheduleId]);
+
+            $conflictCheck = $this->checkScheduleConflicts($request);
+
+            if ($conflictCheck->getData()->conflict) {
+                // Track conflicts for feedback
+                $conflicts[] = $scheduleId;
+                continue;
+            }
+
+            // Enroll the student using Eloquent's create method
+            $enrollment = \App\Models\Enrollment::create([
+                'student_id' => $studentId,
+                'schedule_id' => $scheduleId,
+                'date_enrolled' => now(),
+            ]);
+
+            $enrolledSchedules[] = $enrollment;
+        }
+
+        if (!empty($conflicts)) {
+            return response()->json([
+                'error' => 'Some schedules could not be enrolled due to conflicts.',
+                'conflicted_schedule_ids' => $conflicts,
+                'successfully_enrolled' => $enrolledSchedules,
+            ], 409);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Student enrolled successfully in all schedules.',
+            'enrolled_schedules' => $enrolledSchedules,
+        ], 201);
     }
+
+
 
     /**
      * Display the specified resource.

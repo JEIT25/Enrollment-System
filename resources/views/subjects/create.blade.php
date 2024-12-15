@@ -7,38 +7,75 @@
             @csrf
             <div class="form-group">
                 <label for="subject_code">Subject Code</label>
-                <input type="text" id="subject_code" name="subject_code" class="form-control" required>
+                <input type="text" id="subject_code" name="subject_code"
+                       class="form-control @error('subject_code') is-invalid @enderror"
+                       value="{{ old('subject_code') }}" required>
+                @error('subject_code')
+                    <div class="text-danger mt-1">{{ $message }}</div>
+                @enderror
             </div>
+
             <div class="form-group">
                 <label for="subject_name">Subject Name</label>
-                <input type="text" id="subject_name" name="subject_name" class="form-control" required>
+                <input type="text" id="subject_name" name="subject_name"
+                       class="form-control @error('subject_name') is-invalid @enderror"
+                       value="{{ old('subject_name') }}" required>
+                @error('subject_name')
+                    <div class="text-danger mt-1">{{ $message }}</div>
+                @enderror
             </div>
+
             <div class="form-group">
                 <label for="credits">Credits</label>
-                <input type="number" id="credits" name="credits" class="form-control" required>
+                <input type="number" id="credits" name="credits"
+                       class="form-control @error('credits') is-invalid @enderror"
+                       value="{{ old('credits') }}" required>
+                @error('credits')
+                    <div class="text-danger mt-1">{{ $message }}</div>
+                @enderror
             </div>
+
             <div class="form-group">
                 <label for="department_id">Department</label>
-                <select id="department_id" name="department_id" class="form-control" required>
+                <select id="department_id" name="department_id"
+                        class="form-control @error('department_id') is-invalid @enderror" required>
                     <option value="">Select a Department</option>
                     @foreach ($departments as $department)
-                        <option value="{{ $department->department_id }}">{{ $department->department_name }}</option>
+                        <option value="{{ $department->department_id }}"
+                                {{ old('department_id') == $department->department_id ? 'selected' : '' }}>
+                            {{ $department->department_name }}
+                        </option>
                     @endforeach
                 </select>
+                @error('department_id')
+                    <div class="text-danger mt-1">{{ $message }}</div>
+                @enderror
             </div>
+
             <div class="form-group">
                 <label for="weekly_hours">Weekly Hours</label>
-                <input type="number" id="weekly_hours" name="weekly_hours" class="form-control">
+                <input type="number" id="weekly_hours" name="weekly_hours"
+                       class="form-control @error('weekly_hours') is-invalid @enderror"
+                       value="{{ old('weekly_hours') }}">
+                @error('weekly_hours')
+                    <div class="text-danger mt-1">{{ $message }}</div>
+                @enderror
             </div>
+
             <div class="form-group">
                 <label for="semester">Semester</label>
-                <select id="semester" name="semester" class="form-control">
+                <select id="semester" name="semester"
+                        class="form-control @error('semester') is-invalid @enderror">
                     <option value="">Select Semester</option>
-                    <option value="First">First</option>
-                    <option value="Second">Second</option>
-                    <option value="Summer">Summer</option>
+                    <option value="First" {{ old('semester') == 'First' ? 'selected' : '' }}>First</option>
+                    <option value="Second" {{ old('semester') == 'Second' ? 'selected' : '' }}>Second</option>
+                    <option value="Summer" {{ old('semester') == 'Summer' ? 'selected' : '' }}>Summer</option>
                 </select>
+                @error('semester')
+                    <div class="text-danger mt-1">{{ $message }}</div>
+                @enderror
             </div>
+
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">Save</button>
             </div>
@@ -95,9 +132,18 @@
         }
 
         .form-control:focus {
-            border-color: #007bff;
+            border-color: #043b1b;
             outline: none;
             background-color: #ffffff;
+        }
+
+        .is-invalid {
+            border-color: #dc3545;
+            background-color: #fff5f5;
+        }
+
+        .text-danger {
+            font-size: 13px;
         }
 
         .btn {
@@ -111,12 +157,12 @@
         }
 
         .btn-primary {
-            background-color: #007bff;
+            background-color: #043b1b;
             color: #ffffff;
         }
 
         .btn-primary:hover {
-            background-color: #0056b3;
+            background-color: #065727;
         }
 
         .btn:active {

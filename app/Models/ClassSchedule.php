@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 class ClassSchedule extends Model
 {
     use HasFactory;
+    protected $primaryKey = 'schedule_id';
     public $timestamps = false;//no timestamps for this model, not in migration, needed to avoid error in db seeding
     protected $fillable = [
         'schedule_id',

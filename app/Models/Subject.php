@@ -11,6 +11,9 @@ class Subject extends Model
 {
     public $timestamps = false;//no timestamps for this model, not in migration, needed to avoid error in db seeding
     use HasFactory;
+
+    protected $primaryKey = 'subject_id'; 
+
     protected $fillable = [
         'subject_id',
         'subject_code',

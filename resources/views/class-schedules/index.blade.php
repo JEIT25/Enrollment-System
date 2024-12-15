@@ -123,7 +123,7 @@
         <div class="search-bar">
             <input type="text" id="searchInput" placeholder="Search by subject, room, or instructor..." onkeyup="filterSchedules()">
             <a href="{{ route('class-schedules.create') }}" class="btn-create">New Schedule</a>
-            <a href="#" class="btn-create">Time Tables</a>
+            <a href="{{route('timetable')}}" class="btn-create">Time Tables</a>
         </div>
 
         @if ($schedules->isEmpty())

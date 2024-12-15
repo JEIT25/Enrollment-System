@@ -25,10 +25,16 @@
             <label for="date_of_birth">Date of Birth</label>
             <input type="date" id="date_of_birth" name="date_of_birth" required>
         </div>
-        <div class="form-group">
-            <label for="year_level">Year Level</label>
-            <input type="number" id="year_level" name="year_level" min="1" max="8" required>
-        </div>
+<div class="form-group">
+    <label for="year_level">Year Level</label>
+    <select id="year_level" name="year_level" required>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+    </select>
+</div>
+
         <div class="form-group">
             <label for="enrollment_status">Enrollment Status</label>
             <select id="enrollment_status" name="enrollment_status" required>
@@ -103,7 +109,7 @@
 
     input:focus,
     select:focus {
-        border-color: #007bff;
+        border-color: #043b1b;
         outline: none;
         background-color: #f9f9ff;
     }
@@ -112,7 +118,7 @@
         display: inline-block;
         width: 100%;
         padding: 10px 15px;
-        background: #007bff;
+        background: #043b1b;
         color: #fff;
         font-size: 16px;
         border: none;
@@ -122,7 +128,7 @@
     }
 
     button:hover {
-        background: #0056b3;
+        background: #065727;
     }
 
     button:active {

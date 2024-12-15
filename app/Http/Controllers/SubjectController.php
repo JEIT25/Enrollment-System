@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -37,18 +38,12 @@ class SubjectController extends Controller
             'semester' => 'nullable|string|max:20',
         ]);
 
-        // Insert into database
-        DB::table('subjects')->insert([
-            'subject_code' => $validated['subject_code'],
-            'subject_name' => $validated['subject_name'],
-            'credits' => $validated['credits'],
-            'department_id' => $validated['department_id'],
-            'weekly_hours' => $validated['weekly_hours'],
-            'semester' => $validated['semester'],
-        ]);
+        // Create the subject using Eloquent
+        \App\Models\Subject::create($validated);
 
         return redirect()->route('subjects.index')->with('success', 'Subject added successfully!');
     }
+
 
 
     /**
@@ -78,7 +73,10 @@ class SubjectController extends Controller
     // Delete a specific subject
     public function destroy($id)
     {
-        DB::table('subjects')->where('subject_id', $id)->delete(); // Delete the subject
+        $subject = Subject::findOrFail($id);  // Find the subject or fail
+        $subject->delete(); // Delete the subject using Eloquent
+
         return redirect()->route('subjects.index')->with('success', 'Subject deleted successfully!');
     }
+
 }

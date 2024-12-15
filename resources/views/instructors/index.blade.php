@@ -30,7 +30,10 @@
                                 @endphp
                                 <ul>
                                     @foreach ($availability as $day => $hours)
-                                        <li><strong>{{ $day }}:</strong> {{ implode(', ', $hours) }}</li>
+                                        <li>
+                                            <strong>{{ $day }}:</strong>
+                                            {{ implode(', ', array_map(fn($hour) => \Carbon\Carbon::parse($hour)->format('g:i A'), $hours)) }}
+                                        </li>
                                     @endforeach
                                 </ul>
                             @else
@@ -88,7 +91,7 @@
 
         .btn {
             padding: 10px 20px;
-            background-color: #007bff;
+            background-color: #043b1b;
             color: white;
             text-decoration: none;
             border-radius: 4px;
@@ -98,7 +101,7 @@
         }
 
         .btn:hover {
-            background-color: #0056b3;
+            background-color: #065727;
         }
 
         .table {
@@ -115,7 +118,7 @@
         }
 
         .table th {
-            background-color: #007bff;
+            background-color: #043b1b;
             color: white;
         }
 

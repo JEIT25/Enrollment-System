@@ -63,7 +63,7 @@ main {
 }
 
 .modal button {
-    background-color: #3498db; /* Blue color */
+    background-color: #043b1b;
     color: #fff;
     border: none;
     padding: 10px 20px;
@@ -74,7 +74,7 @@ main {
 }
 
 .modal button:hover {
-    background-color: #2980b9; /* Darker blue on hover */
+    background-color: #0a5a1c; /* Darker blue on hover */
 }
 
 .modal button:focus {

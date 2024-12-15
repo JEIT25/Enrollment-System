@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Instructor extends Model
 {
     use HasFactory;
+
+    protected $primaryKey = 'instructor_id'; // If the primary key is not 'id'
+
     public $timestamps = false;//no timestamps for this model, not in migration, needed to avoid error in db seeding
     protected $fillable = [
         'instructor_id',

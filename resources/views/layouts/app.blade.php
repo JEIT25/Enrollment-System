@@ -19,32 +19,47 @@
             <img src="{{ asset('images/logos/csucc-logo.png') }}" alt="Logo">
             <span class="navbar-text">CSUCC Enrollment System</span>
         </a>
+
         <div class="navbar-links">
-            <a href="#">Log In</a>
+            @if (Auth::check())
+                <!-- Check if the user is authenticated -->
+                <a href="{{ route('logout') }}"
+                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Log Out</a>
+
+                <!-- Include a form to handle logout -->
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                    @csrf
+                </form>
+            @else
+                <a href="{{ route('login') }}">Log In</a>
+            @endif
         </div>
     </nav>
 
 
+
     <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="logo">
-            <img src="{{ asset('images/logos/admin-logo.png') }}" alt="Logo">
-            <h3>
-                Admin
-                @auth
-                    {{ Auth::user()->first_name }} {{ Auth::user()->last_name ?? 'Admin' }}
-                @endauth
-            </h3>
+    @auth()
+        <div class="sidebar">
+            <div class="logo">
+                <img src="{{ asset('images/logos/admin-logo.png') }}" alt="Logo">
+                <h3>
+                    Admin
+                    @auth
+                        {{ Auth::user()->first_name }} {{ Auth::user()->name ?? 'Admin' }}
+                    @endauth
+                </h3>
+            </div>
+            <div class="menu">
+                <a href="{{ route('dashboard') }}">Dashboard</a>
+                <a href="{{ route('class-schedules.index') }}">Class Schedules</a>
+                <a href="{{ route('enrollments.create') }}">Enrollments</a>
+                <a href="{{ route('instructors.index') }}">Instructors</a>
+                <a href="{{ route('subjects.index') }}">Subjects</a>
+                <a href="{{ route('students.index') }}">Students</a>
+            </div>
         </div>
-        <div class="menu">
-            <a href="#">Dashboard</a>
-            <a href="{{ route('class-schedules.index') }}">Class Schedules</a>
-            <a href="{{route('enrollments.create')}}">Enrollments</a>
-            <a href="{{route('instructors.index')}}">Instructors</a>
-            <a href="{{route('subjects.index')}}">Subjects</a>
-            <a href="#">Students</a>
-        </div>
-    </div>
+    @endauth
 
     <!-- Main Content -->
     <main>

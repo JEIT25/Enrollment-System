@@ -35,7 +35,8 @@ return new class extends Migration
             $table->foreign('room_id')
                 ->references('room_id')
                 ->on('rooms')
-                ->onDelete('cascade');
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
         });
     }
 

@@ -72,7 +72,7 @@
         .btn {
             padding: 10px 20px;
             color: white;
-            background-color: #007bff;
+            background-color: #043b1b;
             border: none;
             border-radius: 4px;
             text-decoration: none;
@@ -81,11 +81,11 @@
         }
 
         .btn-danger {
-            background-color: #dc3545;
+            background-color: #ac1827;
         }
 
         .btn:hover {
-            background-color: #0056b3;
+            background-color:#05682e;
         }
 
         .table {
@@ -102,7 +102,7 @@
         }
 
         .table th {
-            background-color: #007bff;
+            background-color: #043b1b;
             color: white;
         }
 

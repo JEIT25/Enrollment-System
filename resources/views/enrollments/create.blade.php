@@ -4,7 +4,7 @@
     <div class="container">
         <h1 class="title">Enroll Student</h1>
 
-        <!-- Filters in a row -->
+        <!-- Filters for Students -->
         <div class="filters-row">
             <div class="form-group">
                 <label for="student-search" class="label">Search for a Student</label>
@@ -28,15 +28,14 @@
             <p class="placeholder">Start typing to search for students.</p>
         </div>
 
-        <!-- Schedules and Enroll Section in a row -->
+        <!-- Schedules and Enroll Section -->
         <div class="drag-and-drop-row">
             <div class="subjects">
                 <!-- Filters for Available Subjects -->
                 <div class="filters-row">
                     <div class="form-group">
                         <label for="subject-search" class="label">Search for a Subject</label>
-                        <input id="subject-search" type="text" class="input"
-                            placeholder="Search by subject name or code">
+                        <input id="subject-search" type="text" class="input" placeholder="Search by subject name or code">
                     </div>
                     <div class="form-group">
                         <label for="day-filter" class="label">Filter by Day</label>
@@ -52,16 +51,8 @@
                 </div>
 
                 <!-- Available Schedules -->
-                <div id="available-schedules filtered-schedules" class="schedule-box schedule-container">
-                    @foreach ($schedules as $schedule)
-                        <div class="draggable-item" draggable="true" data-schedule-id="{{ $schedule->schedule_id }}">
-                            <p><strong>Subject:</strong> {{ $schedule->subject_name }}</p>
-                            <p><strong>Code:</strong> {{ $schedule->subject_code }}</p>
-                            <p><strong>Instructor:</strong> {{ $schedule->first_name }} {{ $schedule->last_name }}</p>
-                            <p><strong>Day:</strong> {{ $schedule->day_of_week }}</p>
-                            <p><strong>Time:</strong> {{ $schedule->start_time }} - {{ $schedule->end_time }}</p>
-                        </div>
-                    @endforeach
+                <div id="filtered-schedules" class="schedule-box schedule-container">
+                    <p class="placeholder">Search for schedules or filter by day.</p>
                 </div>
             </div>
 
@@ -79,6 +70,7 @@
         </div>
     </div>
 @endsection
+
 
 @section('styles')
     <style>
@@ -250,30 +242,38 @@
 
 @section('scripts')
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const draggableItems = document.querySelectorAll(".draggable-item");
-            const enrolledSchedulesContainer = document.querySelector("#enrolled-schedules");
-            const enrollButton = document.querySelector("#enroll-button");
-            let selectedStudentId = null;
+document.addEventListener("DOMContentLoaded", () => {
+    const enrolledSchedulesContainer = document.querySelector("#enrolled-schedules");
+    const enrollButton = document.querySelector("#enroll-button");
+    const studentSearchInput = document.querySelector("#student-search");
+    const yearLevelFilter = document.querySelector("#year-level-filter");
+    const studentListContainer = document.querySelector("#student-list");
+    const subjectSearchInput = document.querySelector("#subject-search");
+    const dayFilter = document.querySelector("#day-filter");
+    const schedulesContainer = document.querySelector("#filtered-schedules");
 
-            const studentSearchInput = document.querySelector("#student-search");
-            const yearLevelFilter = document.querySelector("#year-level-filter");
-            const studentListContainer = document.querySelector("#student-list");
+    let selectedStudentId = null;
+    let selectedSchedules = [];
 
+    // Function to initialize draggable items
+    const initializeDraggableItems = () => {
+        const draggableItems = document.querySelectorAll(".draggable-item");
 
-            const subjectSearchInput = document.querySelector("#subject-search");
-            const dayFilter = document.querySelector("#day-filter");
-            const schedulesContainer = document.querySelector("#filtered-schedules");
+        draggableItems.forEach(item => {
+            item.addEventListener("dragstart", (e) => {
+                e.dataTransfer.setData("scheduleId", item.dataset.scheduleId);
+            });
+        });
+    };
 
-            // Function to fetch filtered schedules
-            const fetchSchedules = async (query = "", day = "") => {
-                try {
-                    const response = await fetch(`/schedules/search?query=${query}&day=${day}`);
-                    const schedules = await response.json();
+    // Function to fetch filtered schedules
+    const fetchSchedules = async (query = "", day = "") => {
+        try {
+            const response = await fetch(`/schedules/search?query=${query}&day=${day}`);
+            const schedules = await response.json();
 
-                    // Render filtered schedules
-                    schedulesContainer.innerHTML = schedules.length ?
-                        schedules.map(schedule => `
+            schedulesContainer.innerHTML = schedules.length
+                ? schedules.map(schedule => `
                     <div class="draggable-item" draggable="true" data-schedule-id="${schedule.schedule_id}">
                         <p><strong>Subject:</strong> ${schedule.subject_name}</p>
                         <p><strong>Code:</strong> ${schedule.subject_code}</p>
@@ -281,38 +281,35 @@
                         <p><strong>Day:</strong> ${schedule.day_of_week}</p>
                         <p><strong>Time:</strong> ${schedule.start_time} - ${schedule.end_time}</p>
                     </div>
-                `).join("") :
-                        '<p class="placeholder">No schedules found.</p>';
-                } catch (error) {
-                    console.error("Error fetching schedules:", error);
-                }
-            };
+                `).join("")
+                : '<p class="placeholder">No schedules found.</p>';
 
-            // Event listeners for search and filter
-            subjectSearchInput.addEventListener("input", () => {
-                const query = subjectSearchInput.value;
-                const day = dayFilter.value;
-                fetchSchedules(query, day);
-            });
+            initializeDraggableItems();
+        } catch (error) {
+            console.error("Error fetching schedules:", error);
+        }
+    };
 
-            dayFilter.addEventListener("change", () => {
-                const query = subjectSearchInput.value;
-                const day = dayFilter.value;
-                fetchSchedules(query, day);
-            });
+    // Fetch all schedules initially
+    fetchSchedules();
 
-            // Initial fetch for all schedules
-            fetchSchedules();
+    // Event listeners for schedule filters
+    subjectSearchInput.addEventListener("input", () => {
+        fetchSchedules(subjectSearchInput.value, dayFilter.value);
+    });
 
-            // Function to fetch filtered students
-            const fetchStudents = async (query = "", yearLevel = "") => {
-                try {
-                    const response = await fetch(`/students/search?query=${query}&year_level=${yearLevel}`);
-                    const students = await response.json();
+    dayFilter.addEventListener("change", () => {
+        fetchSchedules(subjectSearchInput.value, dayFilter.value);
+    });
 
-                    // Render student list
-                    studentListContainer.innerHTML = students.length ?
-                        students.map(student => `
+    // Function to fetch filtered students
+    const fetchStudents = async (query = "", yearLevel = "") => {
+        try {
+            const response = await fetch(`/students/search?query=${query}&year_level=${yearLevel}`);
+            const students = await response.json();
+
+            studentListContainer.innerHTML = students.length
+                ? students.map(student => `
                     <div class="student-item" data-student-id="${student.student_id}">
                         <p><strong>${student.first_name} ${student.last_name}</strong></p>
                         <p>ID No: ${student.student_number}</p>
@@ -322,131 +319,116 @@
                             Select
                         </button>
                     </div>
-                `).join("") :
-                        '<p class="placeholder">No students found.</p>';
+                `).join("")
+                : '<p class="placeholder">No students found.</p>';
 
-                    // Add event listeners for "Select" buttons
-                    document.querySelectorAll(".select-student").forEach(button => {
-                        button.addEventListener("click", (e) => {
-                            selectedStudentId = button.dataset.studentId;
-                            selectedStudent = button.dataset.studentFullName;
-                            selectedSchedules = []; // Reset schedules
-                            enrolledSchedulesContainer.innerHTML =
-                                '<p class="text-gray-500">Drag schedules here to enroll.</p>';
-                            alert(`Selected student: ${selectedStudent}`);
-                        });
-                    });
-                } catch (error) {
-                    console.error("Error fetching students:", error);
-                }
-            };
-
-            // Event listeners for search and filter
-            studentSearchInput.addEventListener("input", () => {
-                const query = studentSearchInput.value;
-                const yearLevel = yearLevelFilter.value;
-                fetchStudents(query, yearLevel);
-            });
-
-            yearLevelFilter.addEventListener("change", () => {
-                const query = studentSearchInput.value;
-                const yearLevel = yearLevelFilter.value;
-                fetchStudents(query, yearLevel);
-            });
-
-            // Initial fetch for all students
-            fetchStudents();
-
-            // Selected schedules array
-            let selectedSchedules = [];
-
-            // Handle drag-and-drop
-            draggableItems.forEach(item => {
-                item.addEventListener("dragstart", (e) => {
-                    e.dataTransfer.setData("scheduleId", item.dataset.scheduleId);
+            document.querySelectorAll(".select-student").forEach(button => {
+                button.addEventListener("click", () => {
+                    selectedStudentId = button.dataset.studentId;
+                    selectedSchedules = [];
+                    enrolledSchedulesContainer.innerHTML = '<p class="text-gray-500">Drag schedules here to enroll.</p>';
+                    alert(`Selected student: ${button.dataset.studentFullName}`);
                 });
             });
+        } catch (error) {
+            console.error("Error fetching students:", error);
+        }
+    };
 
-            enrolledSchedulesContainer.addEventListener("dragover", (e) => {
-                e.preventDefault();
+    // Fetch all students initially
+    fetchStudents();
+
+    // Event listeners for student filters
+    studentSearchInput.addEventListener("input", () => {
+        fetchStudents(studentSearchInput.value, yearLevelFilter.value);
+    });
+
+    yearLevelFilter.addEventListener("change", () => {
+        fetchStudents(studentSearchInput.value, yearLevelFilter.value);
+    });
+
+    // Handle drag-and-drop
+    enrolledSchedulesContainer.addEventListener("dragover", (e) => {
+        e.preventDefault();
+    });
+
+    enrolledSchedulesContainer.addEventListener("drop", async (e) => {
+        e.preventDefault();
+
+        const scheduleId = e.dataTransfer.getData("scheduleId");
+        if (!selectedStudentId) {
+            alert("Please select a student first.");
+            return;
+        }
+
+        if (selectedSchedules.includes(scheduleId)) {
+            alert("This schedule is already added.");
+            return;
+        }
+
+        try {
+            const response = await fetch('/enrollments/check-conflicts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                },
+                body: JSON.stringify({
+                    student_id: selectedStudentId,
+                    schedule_id: scheduleId,
+                }),
             });
 
-            enrolledSchedulesContainer.addEventListener("drop", async (e) => {
-                e.preventDefault();
-                const scheduleId = e.dataTransfer.getData("scheduleId");
+            const result = await response.json();
+            if (result.conflict) {
+                alert(result.message);
+            } else {
+                const droppedItem = [...document.querySelectorAll(".draggable-item")].find(item => item.dataset.scheduleId === scheduleId);
+                enrolledSchedulesContainer.appendChild(droppedItem.cloneNode(true));
+                selectedSchedules.push(scheduleId);
+            }
+        } catch (error) {
+            console.error("Error checking conflicts:", error);
+        }
+    });
 
-                if (!selectedStudentId) {
-                    alert("Please select a student first.");
-                    return;
-                }
+    // Handle enroll button
+    enrollButton.addEventListener("click", async () => {
+        if (!selectedStudentId) {
+            alert("No student selected!");
+            return;
+        }
 
-                try {
-                    const response = await fetch('/enrollments/check-conflicts', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                .getAttribute('content'),
-                        },
-                        body: JSON.stringify({
-                            student_id: selectedStudentId,
-                            schedule_id: scheduleId,
-                        }),
-                    });
+        if (selectedSchedules.length === 0) {
+            alert("No schedules selected!");
+            return;
+        }
 
-                    const result = await response.json();
-
-                    if (result.conflict) {
-                        alert(result.message);
-                    } else {
-                        const droppedItem = [...draggableItems].find(item => item.dataset.scheduleId ===
-                            scheduleId);
-                        enrolledSchedulesContainer.appendChild(droppedItem.cloneNode(true));
-                        selectedSchedules.push(scheduleId);
-                    }
-                } catch (error) {
-                    console.error("Error checking conflicts:", error);
-                }
+        try {
+            const response = await fetch('/enrollments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                },
+                body: JSON.stringify({
+                    student_id: selectedStudentId,
+                    schedule_id: selectedSchedules,
+                }),
             });
 
-            // Handle enroll button
-            enrollButton.addEventListener("click", async () => {
-                if (!selectedStudentId) {
-                    alert("No student selected!");
-                    return;
-                }
+            const result = await response.json();
+            if (result.success) {
+                alert(result.message);
+                location.reload();
+            } else {
+                alert(result.error || "Enrollment failed.");
+            }
+        } catch (error) {
+            console.error("Error enrolling student:", error);
+        }
+    });
+});
 
-                if (selectedSchedules.length === 0) {
-                    alert("No schedules selected!");
-                    return;
-                }
-
-                try {
-                    const response = await fetch('/enrollments', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                .getAttribute('content'),
-                        },
-                        body: JSON.stringify({
-                            student_id: selectedStudentId,
-                            schedule_id: selectedSchedules,
-                        }),
-                    });
-
-                    const result = await response.json();
-
-                    if (result.success) {
-                        alert(result.message);
-                        location.reload();
-                    } else {
-                        alert(result.error || "Enrollment failed.");
-                    }
-                } catch (error) {
-                    console.error("Error enrolling student:", error);
-                }
-            });
-        });
     </script>
 @endsection

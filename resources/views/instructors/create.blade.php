@@ -58,32 +58,33 @@
                     $timeSlots[] = '19:30';
                 @endphp
 
-                @foreach ($days as $day)
-                    <div class="availability-day">
-                        <h5 class="day">{{ $day }}</h5>
-                        <div class="availability-times">
-                            <div class="time-slot">
-                                <select name="availability[{{ $day }}][start][]" class="form-control">
-                                    <option value="">Start Time</option>
-                                    @foreach ($timeSlots as $time)
-                                        <option value="{{ $time }}">{{ $time }}</option>
-                                    @endforeach
-                                </select>
-                                <select name="availability[{{ $day }}][end][]" class="form-control">
-                                    <option value="">End Time</option>
-                                    @foreach ($timeSlots as $time)
-                                        <option value="{{ $time }}">{{ $time }}</option>
-                                    @endforeach
-                                </select>
+                <div class="availability-container">
+                    @foreach ($days as $day)
+                        <div class="availability-day">
+                            <h5 class="day">{{ $day }}</h5>
+                            <div class="availability-times">
+                                <div class="time-slot">
+                                    <select name="availability[{{ $day }}][start][]" class="form-control">
+                                        <option value="">Start Time</option>
+                                        @foreach ($timeSlots as $time)
+                                            <option value="{{ $time }}">{{ $time }}</option>
+                                        @endforeach
+                                    </select>
+                                    <select name="availability[{{ $day }}][end][]" class="form-control">
+                                        <option value="">End Time</option>
+                                        @foreach ($timeSlots as $time)
+                                            <option value="{{ $time }}">{{ $time }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                @endforeach
+                    @endforeach
+                </div>
             </div>
 
             <!-- Hidden input to hold JSON-formatted availability_hours -->
             <input type="hidden" name="availability_hours" id="availability-input">
-
 
             <button type="submit" class="btn-submit">Add Instructor</button>
         </form>
@@ -126,29 +127,7 @@
             // Submit the form
             this.submit();
         });
-
-
-        function addTimeSlot(button) {
-            const timeSlot = document.createElement('div');
-            timeSlot.classList.add('time-slot');
-
-            const startSelect = document.createElement('select');
-            startSelect.name = button.parentElement.querySelector('h5').textContent.trim() + '[start][]';
-            startSelect.classList.add('form-control');
-            startSelect.innerHTML = document.querySelector('select[name="availability[Monday][start][]"]').innerHTML;
-
-            const endSelect = document.createElement('select');
-            endSelect.name = button.parentElement.querySelector('h5').textContent.trim() + '[end][]';
-            endSelect.classList.add('form-control');
-            endSelect.innerHTML = document.querySelector('select[name="availability[Monday][end][]"]').innerHTML;
-
-            timeSlot.appendChild(startSelect);
-            timeSlot.appendChild(endSelect);
-            button.parentElement.querySelector('.availability-times').appendChild(timeSlot);
-        }
     </script>
-
-
 
     <style>
         .container {
@@ -212,7 +191,7 @@
             display: inline-block;
             width: 100%;
             padding: 10px 20px;
-            background: #007bff;
+            background: #043b1b;
             color: #fff;
             font-size: 1rem;
             border: none;
@@ -222,13 +201,31 @@
         }
 
         .btn-submit:hover {
-            background: #0056b3;
+            background: #065727;
         }
 
         #availHours {
             display: flex;
             flex-direction: column;
             align-items: center;
+        }
+
+        /* New Styles for 3 Columns Layout */
+        .availability-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+        }
+
+        .availability-day {
+            width: 30%;
+        }
+
+        @media (max-width: 768px) {
+            .availability-day {
+                width: 100%;
+            }
         }
     </style>
 @endsection

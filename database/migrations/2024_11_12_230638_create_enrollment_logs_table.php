@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('student_id');
             $table->unsignedBigInteger('schedule_id');
             $table->date('date_enrolled');
-            $table->decimal('grade', 4, 2);
+            $table->decimal('grade', 4, 2)->nullable();
             $table->enum("status", allowed: ['Enrolled', 'Completed', 'Dropped', 'Waitlisted'])->default('Enrolled');
             $table->timestamps();
         });

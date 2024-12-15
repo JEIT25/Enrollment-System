@@ -110,10 +110,11 @@ class InstructorController extends Controller
      */
     public function destroy($id)
     {
-        // Perform a raw query to delete the instructor
-        DB::table('instructors')->where('instructor_id', $id)->delete();
-
+        // Find the instructor by ID and soft delete it
+        $instructor = Instructor::findOrFail($id);
+        $instructor->delete();
 
         return redirect()->route('instructors.index')->with('success', 'Instructor deleted successfully!');
     }
+
 }
